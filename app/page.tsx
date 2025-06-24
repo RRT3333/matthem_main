@@ -35,11 +35,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { toast } from "@/components/ui/use-toast"
 
 export default function ResponsiveHealthcare() {
   const [selectedPerson, setSelectedPerson] = useState("mother")
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeView, setActiveView] = useState("dashboard")
+  const [moodDialogOpen, setMoodDialogOpen] = useState(false)
+  const [todayMood, setTodayMood] = useState<null | "sun" | "moon">(null)
 
   const familyMembers = [
     {
@@ -1267,35 +1271,79 @@ export default function ResponsiveHealthcare() {
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-64 bg-white/60 backdrop-blur-sm border-r border-orange-100 min-h-screen">
-          <div className="p-6">
-            <div className="flex items-center space-x-3 mb-8">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-400 rounded-full flex items-center justify-center">
-                <Heart className="w-6 h-6 text-white" />
+        <aside className="hidden lg:flex flex-col w-64 bg-white/60 backdrop-blur-sm border-r border-orange-100 min-h-screen">
+          <div className="flex-1 flex flex-col">
+            <div className="p-6 flex-1 flex flex-col">
+              <div className="flex items-center space-x-3 mb-8">
+                <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-400 rounded-full flex items-center justify-center">
+                  <Heart className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-800">맡흠</h1>
+                  <p className="text-xs text-gray-500">따뜻한 건강 동반자</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-800">맡흠</h1>
-                <p className="text-xs text-gray-500">따뜻한 건강 동반자</p>
-              </div>
+              <nav className="space-y-2 mb-4">
+                {sidebarItems.map((item, index) => (
+                  <Button
+                    key={index}
+                    variant={activeView === item.id ? "default" : "ghost"}
+                    className={`w-full justify-start ${
+                      activeView === item.id
+                        ? "bg-orange-100 text-orange-700 hover:bg-orange-200"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                    onClick={() => handleSidebarClick(item.id)}
+                  >
+                    <item.icon className="mr-3 h-5 w-5" />
+                    {item.label}
+                  </Button>
+                ))}
+              </nav>
+              {/* 설정 바로 아래 오늘의 기분 버튼 */}
+              <Dialog open={moodDialogOpen} onOpenChange={setMoodDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full flex items-center justify-center space-x-2 text-orange-700 border-orange-200 hover:bg-orange-50 mb-2"
+                    size="sm"
+                    onClick={() => setMoodDialogOpen(true)}
+                  >
+                    <Sun className="w-4 h-4 text-yellow-400" />
+                    <Moon className="w-4 h-4 text-blue-400 ml-1" />
+                    <span className="ml-2 text-sm font-medium">오늘의 기분</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-xs text-center">
+                  <DialogHeader>
+                    <DialogTitle className="mb-2">오늘 하루는 어땠나요?</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex justify-center space-x-6 my-4">
+                    <button
+                      className={`rounded-full p-3 border-2 ${todayMood === "sun" ? "border-yellow-400 bg-yellow-50" : "border-gray-200 bg-white"}`}
+                      onClick={() => {
+                        setTodayMood("sun");
+                        setMoodDialogOpen(false);
+                        toast({ title: "오늘의 기분: 해 ☀️", description: "따뜻한 하루를 보내셨군요!" });
+                      }}
+                    >
+                      <Sun className="w-8 h-8 text-yellow-400" />
+                    </button>
+                    <button
+                      className={`rounded-full p-3 border-2 ${todayMood === "moon" ? "border-blue-400 bg-blue-50" : "border-gray-200 bg-white"}`}
+                      onClick={() => {
+                        setTodayMood("moon");
+                        setMoodDialogOpen(false);
+                        toast({ title: "오늘의 기분: 달 🌙", description: "수고 많으셨어요. 내일은 더 나은 하루가 될 거예요!" });
+                      }}
+                    >
+                      <Moon className="w-8 h-8 text-blue-400" />
+                    </button>
+                  </div>
+                  <div className="text-xs text-gray-500">기분을 선택해 주세요</div>
+                </DialogContent>
+              </Dialog>
             </div>
-
-            <nav className="space-y-2">
-              {sidebarItems.map((item, index) => (
-                <Button
-                  key={index}
-                  variant={activeView === item.id ? "default" : "ghost"}
-                  className={`w-full justify-start ${
-                    activeView === item.id
-                      ? "bg-orange-100 text-orange-700 hover:bg-orange-200"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                  onClick={() => handleSidebarClick(item.id)}
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  {item.label}
-                </Button>
-              ))}
-            </nav>
           </div>
         </aside>
 
